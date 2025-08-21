@@ -16,7 +16,7 @@ namespace NacresKnowledgeBase.Infrastructure.Migrations
                 columns: table => new
                 {
                     Id = table.Column<Guid>(type: "uuid", nullable: false),
-                    Filename = table.Column<string>(type: "text", nullable: false),
+                    FileName = table.Column<string>(type: "text", nullable: false),
                     ContentType = table.Column<string>(type: "text", nullable: false),
                     FileSize = table.Column<long>(type: "bigint", nullable: false),
                     UploadedOn = table.Column<DateTime>(type: "timestamp with time zone", nullable: false)

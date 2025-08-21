@@ -17,7 +17,7 @@ namespace NacresKnowledgeBase.Infrastructure.Migrations
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "9.0.8")
+                .HasAnnotation("ProductVersion", "8.0.8")
                 .HasAnnotation("Relational:MaxIdentifierLength", 63);
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
@@ -32,12 +32,12 @@ namespace NacresKnowledgeBase.Infrastructure.Migrations
                         .IsRequired()
                         .HasColumnType("text");
 
-                    b.Property<long>("FileSize")
-                        .HasColumnType("bigint");
-
-                    b.Property<string>("Filename")
+                    b.Property<string>("FileName")
                         .IsRequired()
                         .HasColumnType("text");
+
+                    b.Property<long>("FileSize")
+                        .HasColumnType("bigint");
 
                     b.Property<DateTime>("UploadedOn")
                         .HasColumnType("timestamp with time zone");
