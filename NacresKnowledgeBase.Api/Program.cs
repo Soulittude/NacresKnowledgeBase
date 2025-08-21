@@ -1,7 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using NacresKnowledgeBase.Infrastructure.Persistence;
-using NSwag.AspNetCore;
-
+using NacresKnowledgeBase.Application.Features.Documents.Commands;
+using MediatR;
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
@@ -10,6 +10,8 @@ var builder = WebApplication.CreateBuilder(args);
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
 builder.Services.AddDbContext<ApplicationDbContext>(options => options.UseNpgsql(connectionString));
 builder.Services.AddControllers();
+builder.Services.AddMediatR(cfg => cfg.RegisterServicesFromAssembly(typeof(UploadDocumentCommand).Assembly));
+
 
 
 // Add NSwag services
