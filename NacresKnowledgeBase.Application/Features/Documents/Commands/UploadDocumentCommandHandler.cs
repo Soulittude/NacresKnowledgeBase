@@ -1,6 +1,7 @@
 using MediatR;
 using NacresKnowledgeBase.Core.Entities;
 using NacresKnowledgeBase.Infrastructure.Persistence;
+using UglyToad.PdfPig; // PdfPig kütüphanesini ekliyoruz
 
 namespace NacresKnowledgeBase.Application.Features.Documents.Commands;
 
@@ -15,7 +16,7 @@ public class UploadDocumentCommandHandler : IRequestHandler<UploadDocumentComman
 
     public async Task<Guid> Handle(UploadDocumentCommand request, CancellationToken cancellationToken)
     {
-        // 1. Create a new Document entity from the request data
+        // 1. Döküman metadatasını oluştur (Bu kısım aynı)
         var document = new Document
         {
             Id = Guid.NewGuid(),
@@ -25,15 +26,37 @@ public class UploadDocumentCommandHandler : IRequestHandler<UploadDocumentComman
             UploadedOn = DateTime.UtcNow
         };
 
-        // For now, we are just saving the metadata. We will handle file content later.
+        // 2. Yüklenen dosyanın içeriğini oku
+        var textChunks = new List<TextChunk>();
 
-        // 2. Add the new entity to the database context
+        // request.File.OpenReadStream() ile dosyanın içeriğine ulaşıyoruz
+        using (var stream = request.File.OpenReadStream())
+        using (var pdfDocument = PdfDocument.Open(stream))
+        {
+            foreach (var page in pdfDocument.GetPages())
+            {
+                var text = page.Text;
+                if (!string.IsNullOrWhiteSpace(text))
+                {
+                    textChunks.Add(new TextChunk
+                    {
+                        Id = Guid.NewGuid(),
+                        DocumentId = document.Id, // Oluşturulan dökümanla ilişkilendir
+                        Content = text,
+                        PageNumber = page.Number
+                    });
+                }
+            }
+        }
+
+        // 3. Dökümanı ve okunan metin parçalarını veritabanına ekle
         await _context.Documents.AddAsync(document, cancellationToken);
+        await _context.TextChunks.AddRangeAsync(textChunks, cancellationToken);
 
-        // 3. Save the changes to the database
+        // 4. Değişiklikleri kaydet
         await _context.SaveChangesAsync(cancellationToken);
 
-        // 4. Return the ID of the new document
+        // 5. Dökümanın ID'sini döndür
         return document.Id;
     }
 }
