@@ -46,6 +46,40 @@ namespace NacresKnowledgeBase.Infrastructure.Migrations
 
                     b.ToTable("Documents");
                 });
+
+            modelBuilder.Entity("NacresKnowledgeBase.Core.Entities.TextChunk", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("Content")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<Guid>("DocumentId")
+                        .HasColumnType("uuid");
+
+                    b.Property<int>("PageNumber")
+                        .HasColumnType("integer");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("DocumentId");
+
+                    b.ToTable("TextChunks");
+                });
+
+            modelBuilder.Entity("NacresKnowledgeBase.Core.Entities.TextChunk", b =>
+                {
+                    b.HasOne("NacresKnowledgeBase.Core.Entities.Document", "Document")
+                        .WithMany()
+                        .HasForeignKey("DocumentId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Document");
+                });
 #pragma warning restore 612, 618
         }
     }

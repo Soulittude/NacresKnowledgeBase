@@ -9,4 +9,5 @@ public class ApplicationDbContext : DbContext
     {
     }
     public DbSet<Document> Documents { get; set; }
+    public DbSet<TextChunk> TextChunks { get; set; }
 }
