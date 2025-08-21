@@ -4,8 +4,14 @@ using NacresKnowledgeBase.Application.Features.Documents.Commands;
 
 namespace NacresKnowledgeBase.Api.Controllers;
 
+// Bu sınıfı, Swagger'a yardımcı olmak için ekliyoruz.
+public class FileUploadRequest
+{
+    public IFormFile File { get; set; } = null!;
+}
+
 [ApiController]
-[Route("api/documents")]
+[Route("api/[controller]")]
 public class DocumentsController : ControllerBase
 {
     private readonly ISender _sender;
@@ -16,17 +22,20 @@ public class DocumentsController : ControllerBase
     }
 
     [HttpPost]
-    public async Task<IActionResult> UploadDocument([FromForm] IFormFile file)
+    // Metodun imzasını IFormFile yerine yeni sınıfımızı kullanacak şekilde değiştiriyoruz.
+    public async Task<IActionResult> UploadDocument([FromForm] FileUploadRequest request)
     {
-        if (file == null || file.Length == 0)
+        // Dosyanın null olup olmadığını kontrol ediyoruz.
+        if (request.File == null || request.File.Length == 0)
         {
             return BadRequest("No file uploaded.");
         }
 
-        var command = new UploadDocumentCommand { File = file };
+        // Komutu oluştururken request.File kullanıyoruz.
+        var command = new UploadDocumentCommand { File = request.File };
 
         var documentId = await _sender.Send(command);
 
-        return Ok(new { documentId = documentId });
+        return Ok(new { DocumentId = documentId });
     }
 }
