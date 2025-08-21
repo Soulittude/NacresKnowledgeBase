@@ -1,5 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using NacresKnowledgeBase.Infrastructure.Persistance;
+using NSwag.AspNetCore;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -11,14 +12,19 @@ builder.Services.AddDbContext<ApplicationDbContext>(options => options.UseNpgsql
 builder.Services.AddControllers();
 
 
-builder.Services.AddOpenApi();
+// Add NSwag services
+builder.Services.AddOpenApiDocument();
 
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
-    app.MapOpenApi();
+    // Enable middleware to serve generated OpenAPI document
+    app.UseOpenApi();
+    // Enable middleware to serve swagger-ui (HTML, JS, CSS, etc.),
+    // specifying the OpenAPI document to display
+    app.UseSwaggerUi();
 }
 
 app.UseHttpsRedirection();
