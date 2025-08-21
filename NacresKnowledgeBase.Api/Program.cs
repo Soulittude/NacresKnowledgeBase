@@ -1,5 +1,5 @@
 using Microsoft.EntityFrameworkCore;
-using NacresKnowledgeBase.Infrastructure.Persistance;
+using NacresKnowledgeBase.Infrastructure.Persistence;
 using NSwag.AspNetCore;
 
 var builder = WebApplication.CreateBuilder(args);

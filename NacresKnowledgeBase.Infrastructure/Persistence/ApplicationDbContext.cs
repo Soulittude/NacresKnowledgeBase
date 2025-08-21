@@ -1,7 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using NacresKnowledgeBase.Core.Entities;
 
-namespace NacresKnowledgeBase.Infrastructure.Persistance;
+namespace NacresKnowledgeBase.Infrastructure.Persistence;
 
 public class ApplicationDbContext : DbContext
 {
