@@ -1,58 +1,47 @@
 using Microsoft.EntityFrameworkCore;
-using NacresKnowledgeBase.Infrastructure.Persistence;
 using NacresKnowledgeBase.Application.Features.Documents.Commands;
-using MediatR;
+using NacresKnowledgeBase.Infrastructure.Persistence;
+
 var builder = WebApplication.CreateBuilder(args);
 
-// Add services to the container.
-// Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
+// 1. --- Configure Services ---
 
+// Add our DbContext for database access
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
-builder.Services.AddDbContext<ApplicationDbContext>(options => options.UseNpgsql(connectionString));
+builder.Services.AddDbContext<ApplicationDbContext>(options =>
+    options.UseNpgsql(connectionString));
+
+// Add MediatR and tell it to find handlers in our Application project
+builder.Services.AddMediatR(cfg =>
+    cfg.RegisterServicesFromAssembly(typeof(UploadDocumentCommand).Assembly));
+
+// This is the service that makes API Controllers work
 builder.Services.AddControllers();
-builder.Services.AddMediatR(cfg => cfg.RegisterServicesFromAssembly(typeof(UploadDocumentCommand).Assembly));
+
+// These are the standard services for Swagger UI (API documentation)
+builder.Services.AddEndpointsApiExplorer();
+builder.Services.AddSwaggerGen();
 
 
-
-// Add NSwag services
-builder.Services.AddOpenApiDocument();
-
+// 2. --- Build the Application ---
 var app = builder.Build();
 
-// Configure the HTTP request pipeline.
+
+// 3. --- Configure the HTTP Pipeline ---
+
+// Use Swagger in the development environment
 if (app.Environment.IsDevelopment())
 {
-    // Enable middleware to serve generated OpenAPI document
-    app.UseOpenApi();
-    // Enable middleware to serve swagger-ui (HTML, JS, CSS, etc.),
-    // specifying the OpenAPI document to display
-    app.UseSwaggerUi();
+    app.UseSwagger();
+    app.UseSwaggerUI();
 }
 
-app.UseHttpsRedirection();
+// We are temporarily disabling this to fix the browser issue.
+// app.UseHttpsRedirection();
 
-var summaries = new[]
-{
-    "Freezing", "Bracing", "Chilly", "Cool", "Mild", "Warm", "Balmy", "Hot", "Sweltering", "Scorching"
-};
+// This is the line that maps requests to our controllers (like DocumentsController)
+app.MapControllers();
 
-app.MapGet("/weatherforecast", () =>
-{
-    var forecast = Enumerable.Range(1, 5).Select(index =>
-        new WeatherForecast
-        (
-            DateOnly.FromDateTime(DateTime.Now.AddDays(index)),
-            Random.Shared.Next(-20, 55),
-            summaries[Random.Shared.Next(summaries.Length)]
-        ))
-        .ToArray();
-    return forecast;
-})
-.WithName("GetWeatherForecast");
 
+// 4. --- Run the Application ---
 app.Run();
-
-record WeatherForecast(DateOnly Date, int TemperatureC, string? Summary)
-{
-    public int TemperatureF => 32 + (int)(TemperatureC / 0.5556);
-}
