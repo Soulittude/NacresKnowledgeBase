@@ -1,0 +1,10 @@
+{
+  "ExpandedNodes": [
+    "",
+    "\\NacresKnowledgeBase.Api",
+    "\\NacresKnowledgeBase.Application",
+    "\\NacresKnowledgeBase.Core",
+    "\\NacresKnowledgeBase.Infrastructure"
+  ],
+  "PreviewInSolutionExplorer": false
+}
