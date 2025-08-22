@@ -58,7 +58,10 @@ public class UploadDocumentCommandHandler : IRequestHandler<UploadDocumentComman
         foreach (var chunk in textChunks)
         {
             // OpenAI'nin model boyutuna (1536) uygun, rastgele sayılardan oluşan bir vektör oluştur.
-            var dummyEmbedding = new float[1536];
+            // YANLIŞ: var dummyEmbedding = new float[1536];
+            var dummyEmbedding = new float[768]; // DOĞRUSU BU
+
+            // for döngüsü de .Length kullandığı için otomatik olarak doğru çalışacaktır.
             for (int i = 0; i < dummyEmbedding.Length; i++)
             {
                 // -1 ile 1 arasında rastgele bir sayı ata
