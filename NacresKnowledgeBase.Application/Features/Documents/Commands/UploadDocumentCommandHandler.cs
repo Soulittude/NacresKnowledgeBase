@@ -1,9 +1,11 @@
-using Azure.AI.OpenAI;
+// Artık bu kütüphanelere ihtiyacımız yok
+// using Azure.AI.OpenAI;
+// using Microsoft.Extensions.Configuration;
+
 using MediatR;
-using Microsoft.Extensions.Configuration;
 using NacresKnowledgeBase.Core.Entities;
 using NacresKnowledgeBase.Infrastructure.Persistence;
-using Pgvector; // Bu using'i ekleyin
+using Pgvector;
 using UglyToad.PdfPig;
 
 namespace NacresKnowledgeBase.Application.Features.Documents.Commands;
@@ -11,20 +13,12 @@ namespace NacresKnowledgeBase.Application.Features.Documents.Commands;
 public class UploadDocumentCommandHandler : IRequestHandler<UploadDocumentCommand, Guid>
 {
     private readonly ApplicationDbContext _context;
-    private readonly OpenAIClient _openAIClient;
+    // OpenAIClient ve IConfiguration'ı constructor'dan kaldırıyoruz
 
-    // IConfiguration'ı enjekte ederek API anahtarına erişiyoruz
-    public UploadDocumentCommandHandler(ApplicationDbContext context, IConfiguration configuration)
+    public UploadDocumentCommandHandler(ApplicationDbContext context)
     {
         _context = context;
-
-        var apiKey = configuration["OpenAI:ApiKey"];
-        if (string.IsNullOrEmpty(apiKey))
-        {
-            throw new InvalidOperationException("OpenAI API key is not configured in user secrets.");
-        }
-
-        _openAIClient = new OpenAIClient(apiKey);
+        // API anahtarı kontrolünü tamamen kaldırıyoruz
     }
 
     public async Task<Guid> Handle(UploadDocumentCommand request, CancellationToken cancellationToken)
@@ -58,28 +52,26 @@ public class UploadDocumentCommandHandler : IRequestHandler<UploadDocumentComman
             }
         }
 
-        // --- BURASI YAPAY ZEKA ENTEGRASYONU ---
-        // Her metin parçası için OpenAI API'sini çağırarak embedding oluştur
+        // --- DEĞİŞİKLİK BURADA BAŞLIYOR ---
+        // Gerçek API çağrısı yerine sahte (dummy) embedding oluşturuyoruz
+        var random = new Random();
         foreach (var chunk in textChunks)
         {
-            // text-embedding-3-small, OpenAI'nin en yeni ve verimli embedding modellerinden biridir.
-            var options = new EmbeddingsOptions("text-embedding-3-small", new[] { chunk.Content });
-
-            var response = await _openAIClient.GetEmbeddingsAsync(options, cancellationToken);
-
-            // API'den gelen float[] dizisini al
-            var embeddingArray = response.Value.Data[0].Embedding.ToArray();
+            // OpenAI'nin model boyutuna (1536) uygun, rastgele sayılardan oluşan bir vektör oluştur.
+            var dummyEmbedding = new float[1536];
+            for (int i = 0; i < dummyEmbedding.Length; i++)
+            {
+                // -1 ile 1 arasında rastgele bir sayı ata
+                dummyEmbedding[i] = (float)(random.NextDouble() * 2 - 1);
+            }
 
             // Veritabanına kaydetmek için Pgvector.Vector tipine dönüştür
-            chunk.Embedding = new Vector(embeddingArray);
+            chunk.Embedding = new Vector(dummyEmbedding);
         }
-        // --- YAPAY ZEKA KISMI SONU ---
+        // --- DEĞİŞİKLİK BURADA BİTİYOR ---
 
-        // Dökümanı ve "akıllandırılmış" metin parçalarını veritabanına ekle
         await _context.Documents.AddAsync(document, cancellationToken);
         await _context.TextChunks.AddRangeAsync(textChunks, cancellationToken);
-
-        // Değişiklikleri kaydet
         await _context.SaveChangesAsync(cancellationToken);
 
         return document.Id;
