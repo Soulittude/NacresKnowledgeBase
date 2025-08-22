@@ -1,6 +1,7 @@
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
 using NacresKnowledgeBase.Application.Features.Documents.Commands;
+using NacresKnowledgeBase.Application.Features.Documents.Queries;
 
 namespace NacresKnowledgeBase.Api.Controllers;
 
@@ -37,5 +38,19 @@ public class DocumentsController : ControllerBase
         var documentId = await _sender.Send(command);
 
         return Ok(new { DocumentId = documentId });
+    }
+
+    [HttpPost("ask")] // URL: /api/documents/ask
+    public async Task<IActionResult> AskQuestion([FromBody] AskQuestionRequest request)
+    {
+        var query = new AskQuestionQuery { Question = request.Question };
+        var answer = await _sender.Send(query);
+        return Ok(new { Answer = answer });
+    }
+
+    // Bu yardımcı sınıfı da controller dosyasının içine veya altına ekleyin
+    public class AskQuestionRequest
+    {
+        public string Question { get; set; } = string.Empty;
     }
 }

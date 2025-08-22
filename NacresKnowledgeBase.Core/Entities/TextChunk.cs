@@ -19,7 +19,7 @@ public class TextChunk
 
     // Bu kolonu ekliyoruz. "vector(1536)" PostgreSQL'e bunun bir vektör
     // olduğunu ve OpenAI'nin text-embedding-ada-002 modelinin ürettiği
-    // 1536 boyutta olacağını söyler.
-    [Column(TypeName = "vector(1536)")]
+    // 1536 boyutta olacağını söyler ama ben gemini kullandım o yüzden 768.
+    [Column(TypeName = "vector(768)")]
     public Vector? Embedding { get; set; }
 }

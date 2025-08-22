@@ -62,7 +62,7 @@ namespace NacresKnowledgeBase.Infrastructure.Migrations
                         .HasColumnType("uuid");
 
                     b.Property<Vector>("Embedding")
-                        .HasColumnType("vector(1536)");
+                        .HasColumnType("vector(768)");
 
                     b.Property<int>("PageNumber")
                         .HasColumnType("integer");
