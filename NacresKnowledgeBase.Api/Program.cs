@@ -1,6 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using NacresKnowledgeBase.Application.Features.Documents.Commands;
 using NacresKnowledgeBase.Infrastructure.Persistence;
+using Pgvector.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -9,7 +10,7 @@ var builder = WebApplication.CreateBuilder(args);
 // Add our DbContext for database access
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
-    options.UseNpgsql(connectionString));
+    options.UseNpgsql(connectionString, o => o.UseVector()));
 
 // Add MediatR and tell it to find handlers in our Application project
 builder.Services.AddMediatR(cfg =>
