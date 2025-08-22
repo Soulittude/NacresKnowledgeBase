@@ -7,18 +7,19 @@ using NacresKnowledgeBase.Core.Entities;
 using NacresKnowledgeBase.Infrastructure.Persistence;
 using Pgvector;
 using UglyToad.PdfPig;
+using NacresKnowledgeBase.Application.Services;
 
 namespace NacresKnowledgeBase.Application.Features.Documents.Commands;
 
 public class UploadDocumentCommandHandler : IRequestHandler<UploadDocumentCommand, Guid>
 {
     private readonly ApplicationDbContext _context;
-    // OpenAIClient ve IConfiguration'ı constructor'dan kaldırıyoruz
+    private readonly IGeminiService _geminiService;
 
-    public UploadDocumentCommandHandler(ApplicationDbContext context)
+    public UploadDocumentCommandHandler(ApplicationDbContext context, IGeminiService geminiService) // Değiştirildi
     {
         _context = context;
-        // API anahtarı kontrolünü tamamen kaldırıyoruz
+        _geminiService = geminiService; // Değiştirildi
     }
 
     public async Task<Guid> Handle(UploadDocumentCommand request, CancellationToken cancellationToken)
@@ -54,22 +55,9 @@ public class UploadDocumentCommandHandler : IRequestHandler<UploadDocumentComman
 
         // --- DEĞİŞİKLİK BURADA BAŞLIYOR ---
         // Gerçek API çağrısı yerine sahte (dummy) embedding oluşturuyoruz
-        var random = new Random();
         foreach (var chunk in textChunks)
         {
-            // OpenAI'nin model boyutuna (1536) uygun, rastgele sayılardan oluşan bir vektör oluştur.
-            // YANLIŞ: var dummyEmbedding = new float[1536];
-            var dummyEmbedding = new float[768]; // DOĞRUSU BU
-
-            // for döngüsü de .Length kullandığı için otomatik olarak doğru çalışacaktır.
-            for (int i = 0; i < dummyEmbedding.Length; i++)
-            {
-                // -1 ile 1 arasında rastgele bir sayı ata
-                dummyEmbedding[i] = (float)(random.NextDouble() * 2 - 1);
-            }
-
-            // Veritabanına kaydetmek için Pgvector.Vector tipine dönüştür
-            chunk.Embedding = new Vector(dummyEmbedding);
+            chunk.Embedding = await _geminiService.GetEmbeddingAsync(chunk.Content, cancellationToken);
         }
         // --- DEĞİŞİKLİK BURADA BİTİYOR ---
 

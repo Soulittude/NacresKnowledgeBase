@@ -1,6 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <ItemGroup>
+    <ProjectReference Include="..\NacresKnowledgeBase.Application\NacresKnowledgeBase.Application.csproj" />
     <ProjectReference Include="..\NacresKnowledgeBase.Core\NacresKnowledgeBase.Core.csproj" />
   </ItemGroup>
 

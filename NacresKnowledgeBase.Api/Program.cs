@@ -2,6 +2,8 @@ using Microsoft.EntityFrameworkCore;
 using NacresKnowledgeBase.Application.Features.Documents.Commands;
 using NacresKnowledgeBase.Infrastructure.Persistence;
 using Pgvector.EntityFrameworkCore;
+using NacresKnowledgeBase.Application.Services;
+using NacresKnowledgeBase.Infrastructure.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -18,6 +20,11 @@ builder.Services.AddMediatR(cfg =>
 
 // This is the service that makes API Controllers work
 builder.Services.AddControllers();
+
+builder.Services.AddHttpClient<IGeminiService, GeminiService>(client =>
+{
+    client.BaseAddress = new Uri("https://generativelanguage.googleapis.com");
+});
 
 // These are the standard services for Swagger UI (API documentation)
 builder.Services.AddEndpointsApiExplorer();
