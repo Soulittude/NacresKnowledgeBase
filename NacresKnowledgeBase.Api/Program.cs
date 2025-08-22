@@ -2,6 +2,7 @@ using Microsoft.EntityFrameworkCore;
 using NacresKnowledgeBase.Application.Features.Documents.Commands;
 using NacresKnowledgeBase.Infrastructure.Persistence;
 using Pgvector.EntityFrameworkCore;
+using NacresKnowledgeBase.Application.Abstractions;
 using NacresKnowledgeBase.Application.Services;
 using NacresKnowledgeBase.Infrastructure.Services;
 
@@ -13,6 +14,11 @@ var builder = WebApplication.CreateBuilder(args);
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseNpgsql(connectionString, o => o.UseVector()));
+
+builder.Services.AddScoped<IApplicationDbContext>(provider =>
+    provider.GetRequiredService<ApplicationDbContext>());
+
+builder.Services.AddScoped<IPdfTextExtractor, PdfTextExtractor>();
 
 // Add MediatR and tell it to find handlers in our Application project
 builder.Services.AddMediatR(cfg =>

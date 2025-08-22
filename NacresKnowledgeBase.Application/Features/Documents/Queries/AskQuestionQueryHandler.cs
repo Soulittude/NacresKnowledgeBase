@@ -1,18 +1,18 @@
 using MediatR;
 using Microsoft.EntityFrameworkCore;
-using NacresKnowledgeBase.Infrastructure.Persistence;
 using Pgvector;
-using Pgvector.EntityFrameworkCore; // Vektör fonksiyonları için bu gerekli
+using Pgvector.EntityFrameworkCore;
+using NacresKnowledgeBase.Application.Abstractions;
 using NacresKnowledgeBase.Application.Services;
 
 namespace NacresKnowledgeBase.Application.Features.Documents.Queries;
 
 public class AskQuestionQueryHandler : IRequestHandler<AskQuestionQuery, string>
 {
-    private readonly ApplicationDbContext _context;
+    private readonly IApplicationDbContext _context;
     private readonly IGeminiService _geminiService; // Değiştirildi
 
-    public AskQuestionQueryHandler(ApplicationDbContext context, IGeminiService geminiService) // Değiştirildi
+    public AskQuestionQueryHandler(IApplicationDbContext context, IGeminiService geminiService)
     {
         _context = context;
         _geminiService = geminiService; // Değiştirildi

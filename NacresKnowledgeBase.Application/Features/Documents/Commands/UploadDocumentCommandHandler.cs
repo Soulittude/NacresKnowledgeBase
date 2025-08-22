@@ -4,22 +4,23 @@
 
 using MediatR;
 using NacresKnowledgeBase.Core.Entities;
-using NacresKnowledgeBase.Infrastructure.Persistence;
 using Pgvector;
-using UglyToad.PdfPig;
+using NacresKnowledgeBase.Application.Abstractions;
 using NacresKnowledgeBase.Application.Services;
 
 namespace NacresKnowledgeBase.Application.Features.Documents.Commands;
 
 public class UploadDocumentCommandHandler : IRequestHandler<UploadDocumentCommand, Guid>
 {
-    private readonly ApplicationDbContext _context;
+    private readonly IApplicationDbContext _context;
     private readonly IGeminiService _geminiService;
+    private readonly IPdfTextExtractor _pdfTextExtractor;
 
-    public UploadDocumentCommandHandler(ApplicationDbContext context, IGeminiService geminiService) // Değiştirildi
+    public UploadDocumentCommandHandler(IApplicationDbContext context, IGeminiService geminiService, IPdfTextExtractor pdfTextExtractor)
     {
         _context = context;
-        _geminiService = geminiService; // Değiştirildi
+        _geminiService = geminiService;
+        _pdfTextExtractor = pdfTextExtractor; // Eklendi
     }
 
     public async Task<Guid> Handle(UploadDocumentCommand request, CancellationToken cancellationToken)
@@ -33,28 +34,23 @@ public class UploadDocumentCommandHandler : IRequestHandler<UploadDocumentComman
             UploadedOn = DateTime.UtcNow
         };
 
+        // PDF okuma kodunun tamamını silip yerine bunu yazıyoruz
         var textChunks = new List<TextChunk>();
         using (var stream = request.File.OpenReadStream())
-        using (var pdfDocument = PdfDocument.Open(stream))
         {
-            foreach (var page in pdfDocument.GetPages())
+            foreach (var (pageNumber, text) in _pdfTextExtractor.ExtractText(stream))
             {
-                var text = page.Text;
-                if (!string.IsNullOrWhiteSpace(text))
+                textChunks.Add(new TextChunk
                 {
-                    textChunks.Add(new TextChunk
-                    {
-                        Id = Guid.NewGuid(),
-                        DocumentId = document.Id,
-                        Content = text,
-                        PageNumber = page.Number
-                    });
-                }
+                    Id = Guid.NewGuid(),
+                    DocumentId = document.Id,
+                    Content = text,
+                    PageNumber = pageNumber
+                });
             }
         }
 
         // --- DEĞİŞİKLİK BURADA BAŞLIYOR ---
-        // Gerçek API çağrısı yerine sahte (dummy) embedding oluşturuyoruz
         foreach (var chunk in textChunks)
         {
             chunk.Embedding = await _geminiService.GetEmbeddingAsync(chunk.Content, cancellationToken);
