@@ -27,6 +27,7 @@ secrets.json
 # İşletim sistemine özel dosyalar
 .DS_Store
 Thumbs.db
+Migrations/
 
 # ===================================================================
 # Diğer Geliştirme Araçları ve Çıktıları
